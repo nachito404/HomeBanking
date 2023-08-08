@@ -20,6 +20,7 @@ public class AccountDTO {
         balance = account.getBalance();
     }
 
+
     public Long getId() {
         return id;
     }
