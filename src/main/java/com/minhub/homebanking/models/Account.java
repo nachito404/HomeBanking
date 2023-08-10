@@ -1,10 +1,11 @@
 package com.minhub.homebanking.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Account {
@@ -21,6 +22,8 @@ public class Account {
     private double balance;
 @ManyToOne(fetch = FetchType.EAGER)
     private Client client;
+@OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
+    private Set<Transaction> transactions = new HashSet<>();
 
     //constructores
 
@@ -34,6 +37,14 @@ public class Account {
     }
     //metodos
 
+    public Set<Transaction> getTransactions () {return transactions;}
+
+    public void addTransaction (Transaction transaction){
+        transaction.setAccount(this);
+        this.transactions.add(transaction);
+    }
+    public Long getId() {return id;}
+
     public Client getClient() {
         return client;
     }
@@ -42,22 +53,11 @@ public class Account {
         this.client = client;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public String getNumber() {return number;}
 
+    public void setNumber(String number) {this.number = number;}
 
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
+    public LocalDate getCreationDate() {return creationDate;}
 
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;

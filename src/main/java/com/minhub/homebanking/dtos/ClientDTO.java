@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ClientDTO {
-
+    //atributos
     private Long id;
 
     private String firstName;
@@ -19,14 +19,17 @@ public class ClientDTO {
 
     private Set<AccountDTO> accounts;
 
+    //constructores
 
     public ClientDTO(Client client){
         id = client.getId();
         firstName = client.getFirstName();
         lastName = client.getLastName();
         email = client.getEmail();
-        accounts = client.getAccounts().stream().map(element -> new AccountDTO(element)).collect(Collectors.toSet());
+        accounts = client.getAccounts().stream().map(AccountDTO::new).collect(Collectors.toSet());
     }
+
+    //metodos
 
     public Long getId() {
         return id;
