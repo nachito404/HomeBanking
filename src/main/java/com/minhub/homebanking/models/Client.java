@@ -1,12 +1,11 @@
 package com.minhub.homebanking.models;
 
+import com.minhub.homebanking.dtos.ClientLoanDTO;
 import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class Client {
@@ -23,6 +22,8 @@ public class Client {
     private String email;
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "client")
     private Set<Account> accounts = new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "client")
+    private Set<ClientLoan> clientLoans = new HashSet<>();
 
     //constructoress
 
@@ -74,6 +75,14 @@ public class Client {
         this.accounts.add(account);
     }
 
+    public Set<ClientLoan> getLoans() {
+        return clientLoans;
+    }
+
+    public void addClientLoan (ClientLoan clientLoan){
+        clientLoan.setClient(this);
+        this.clientLoans.add(clientLoan);
+    }
 
     @Override
     public String toString() {
