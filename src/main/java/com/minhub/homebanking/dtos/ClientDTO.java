@@ -23,6 +23,8 @@ public class ClientDTO {
 
     private Set<ClientLoanDTO> loans;
 
+    private Set<CardDTO> cards;
+
 
     //constructores
 
@@ -33,6 +35,7 @@ public class ClientDTO {
         email = client.getEmail();
         accounts = client.getAccounts().stream().map(AccountDTO::new).collect(Collectors.toSet());
         loans = client.getLoans().stream().map(ClientLoanDTO::new).collect(Collectors.toSet());
+        cards = client.getCards().stream().map(card -> new CardDTO(card)).collect(Collectors.toSet());
     }
 
     //metodos
@@ -58,4 +61,6 @@ public class ClientDTO {
     }
 
     public Set<ClientLoanDTO> getLoans() {return loans;}
+
+    public Set<CardDTO> getCards() {return cards;}
 }
