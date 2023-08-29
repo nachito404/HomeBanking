@@ -19,15 +19,17 @@ import javax.servlet.http.HttpSession;
 public class WebAuthorization {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers(HttpMethod.POST, "/api/clients").permitAll();
-
-        //http.authorizeRequests().antMatchers("/admin/**").hasAuthority("ADMIN");
-
-        //http.authorizeRequests().antMatchers("/**").hasAuthority("CLIENT");
+        //cuidado con el **, si hay algo debajo que sigue la misma ruta y es mas especifico lo va a pisar, se vuelve obsoleto.
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/clients","/api/login").permitAll()
+                .antMatchers("/web/index.html","/web/img/**","/web/js/index.js","/web/css/style.css","/web/accounts.html","/web/js/accounts.js","/favicon.ico").permitAll()
+                .antMatchers("/rest/**","/h2-console/**").hasAuthority("ADMIN")
+                .antMatchers("/api/clients/current","/api/accounts/{id}","/api/clients","/web/cards.html","/web/js/cards.js","/web/css/cards.css","/api/clients/current/accounts","/web/cards.html","/web/create-cards.html","/web/js/create-cards.js").hasAnyAuthority("CLIENT","ADMIN")
+                .anyRequest().denyAll();
 
         http.formLogin().usernameParameter("email").passwordParameter("password").loginPage("/api/login");
 
-        http.logout().logoutUrl("/api/logout");
+        http.logout().logoutUrl("/api/logout").deleteCookies("JSESSIONID");
 
         http.logout().logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler());
 

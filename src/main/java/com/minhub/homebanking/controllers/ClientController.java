@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 public class ClientController {
     @Autowired
     private ClientRepository clientRepository;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    //servlet asocia la peticion a la ruta
     //lo que esta debajo es un servlet, siempre van a encontrarse dentro de un controlador.
     @RequestMapping("/clients")
     public List<ClientDTO> getClient() {
@@ -38,26 +40,23 @@ public class ClientController {
         return new ClientDTO(clientRepository.findByEmail(authentication.getName()));
 
     }
-        @Autowired
-        private PasswordEncoder passwordEncoder;
 
         @RequestMapping(path = "/clients", method = RequestMethod.POST)
-
         public ResponseEntity<Object> register(
                 @RequestParam String firstName, @RequestParam String lastName,
                 @RequestParam String email, @RequestParam String password) {
-            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+
+            if (firstName.isBlank() || lastName.isBlank() || email.isBlank() || password.isBlank()) {
                 return new ResponseEntity<>("Missing data", HttpStatus.FORBIDDEN);
-            }
-
-            if (clientRepository.findByEmail(email) != null) {
+            } else if (firstName.length() > 15 || lastName.length() > 15 ) {
+                return new ResponseEntity<>("name exceeds number of characters", HttpStatus.NOT_ACCEPTABLE);
+            } else if (password.length() < 8 || password.length() > 30) {
+                return new ResponseEntity<>("password must be between 8 and 30 characters", HttpStatus.NOT_ACCEPTABLE);
+        } else if (clientRepository.findByEmail(email) != null) {
                 return new ResponseEntity<>("Name already in use", HttpStatus.FORBIDDEN);
-            }
-
+            }else
             clientRepository.save(new Client(firstName, lastName, email, passwordEncoder.encode(password)));
-
             return new ResponseEntity<>(HttpStatus.CREATED);
-
         }
     }
 
