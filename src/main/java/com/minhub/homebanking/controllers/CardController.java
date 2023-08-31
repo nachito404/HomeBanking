@@ -1,5 +1,7 @@
 package com.minhub.homebanking.controllers;
 
+import com.minhub.homebanking.dtos.AccountDTO;
+import com.minhub.homebanking.dtos.CardDTO;
 import com.minhub.homebanking.models.Card;
 import com.minhub.homebanking.models.CardColor;
 import com.minhub.homebanking.models.CardType;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -30,16 +34,19 @@ public class CardController {
     @PostMapping("/clients/current/cards")
     public ResponseEntity<Object> addCard(@RequestParam CardType cardType, @RequestParam CardColor cardColor, Authentication authentication){
         Client client = clientRepository.findByEmail(authentication.getName());
-        if (client.getCards().stream().filter(TYPE -> TYPE.getType().equals(CardType.DEBIT)).toArray().length>=3){
-            return new ResponseEntity<>("maximum number of cards debit reached", HttpStatus.FORBIDDEN);
-        } else if (client.getCards().stream().filter(TYPE -> TYPE.getType().equals(CardType.CREDIT)).toArray().length>=3) {
-            return new ResponseEntity<>("maximum number of cards credit reached", HttpStatus.FORBIDDEN);
+        if (client.getCards().stream().filter(TYPE -> TYPE.getType()== cardType).toArray().length>=3){
+            return new ResponseEntity<>("maximum number of cards reached", HttpStatus.FORBIDDEN);
         } else{
             Card card = new Card(client.getFirstName()+" "+client.getLastName(),cardType,cardColor,getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000), getRandomNumber(100,1000), LocalDate.now().plusYears(5),LocalDate.now());
             client.addCard(card);
             cardRepository.save(card);
             return new ResponseEntity<>("card created successfully",HttpStatus.CREATED);
         }
+    }
+    @RequestMapping("/clients/current/cards")
+    public List<CardDTO> getCard(Authentication authentication) {
+        Client client = clientRepository.findByEmail(authentication.getName());
+        return client.getCards().stream().map(card -> new CardDTO(card)).collect(Collectors.toList());
     }
 
 
