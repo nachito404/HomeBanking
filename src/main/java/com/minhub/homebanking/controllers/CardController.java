@@ -32,17 +32,20 @@ public class CardController {
     CardRepository cardRepository;
 
     @PostMapping("/clients/current/cards")
-    public ResponseEntity<Object> addCard(@RequestParam CardType cardType, @RequestParam CardColor cardColor, Authentication authentication){
+    public ResponseEntity<Object> addCard(@RequestParam CardType cardType, @RequestParam CardColor cardColor, Authentication authentication) {
         Client client = clientRepository.findByEmail(authentication.getName());
-        if (client.getCards().stream().filter(TYPE -> TYPE.getType()== cardType).toArray().length>=3){
+        if (client.getCards().stream().filter(TYPE -> TYPE.getType() == cardType).toArray().length >= 3) {
             return new ResponseEntity<>("maximum number of cards reached", HttpStatus.FORBIDDEN);
-        } else{
-            Card card = new Card(client.getFirstName()+" "+client.getLastName(),cardType,cardColor,getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000)+"-"+getRandomNumber(1000, 10000), getRandomNumber(100,1000), LocalDate.now().plusYears(5),LocalDate.now());
+        } else if (client.getCards().stream().filter(type -> type.getType() == cardType).filter(color -> color.getColor()== cardColor).toArray().length>=1 ) {
+            return new ResponseEntity<>("you cannot have two cards of the same color", HttpStatus.FORBIDDEN);
+        } else {
+            Card card = new Card(client.getFirstName() + " " + client.getLastName(), cardType, cardColor, getRandomNumberPlusFour(1000,10000),getRandomNumber(100,1000), LocalDate.now().plusYears(5), LocalDate.now());
             client.addCard(card);
             cardRepository.save(card);
-            return new ResponseEntity<>("card created successfully",HttpStatus.CREATED);
+            return new ResponseEntity<>("card created successfully", HttpStatus.CREATED);
         }
     }
+
     @RequestMapping("/clients/current/cards")
     public List<CardDTO> getCard(Authentication authentication) {
         Client client = clientRepository.findByEmail(authentication.getName());
@@ -51,6 +54,14 @@ public class CardController {
 
 
     public int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
+        return (int) ((Math.random() * (max - min)) + min);}
+
+    public String getRandomNumberPlusFour(int min, int max) {
+        String randomNumber;
+        do {
+            randomNumber = getRandomNumber(min, max) + "-" + getRandomNumber(min, max) + "-" + getRandomNumber(min, max) + "-" + getRandomNumber(min, max);
+        } while (cardRepository.findByNumber(randomNumber) != null);
+
+        return randomNumber;
     }
 }

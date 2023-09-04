@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootApplication
 public class HomebankingApplication {
@@ -39,11 +40,11 @@ public class HomebankingApplication {
 			Transaction transaction4 = new Transaction(TransactionType.DEBITO, -4500.00, "icecream", LocalDateTime.now());
 
 			Loan mortgage = new Loan("Mortgage", 500000.00);
-					mortgage.setPayments(List.of(12,24,36,48,60));
+					mortgage.setPayments(Set.of(12,24,36,48,60));
             Loan personnel = new Loan("Personnel", 100000.00);
-					personnel.setPayments(List.of(6,12,24));
+					personnel.setPayments(Set.of(6,12,24));
 			Loan automotive = new Loan("Automotive", 300000.00);
-					automotive.setPayments(List.of(6,12,24,36));
+					automotive.setPayments(Set.of(6,12,24,36));
 
 			ClientLoan clientLoan1 = new ClientLoan(400000.00, 60);
 			ClientLoan clientLoan2 = new ClientLoan(50000.00,12);

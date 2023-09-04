@@ -19,14 +19,15 @@ import javax.servlet.http.HttpSession;
 public class WebAuthorization {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // aclarar que tipo de metodo queremos darle al rol, si no aclaramos por defecto toma todso los metodos.
         //cuidado con el **, si hay algo debajo que sigue la misma ruta y es mas especifico lo va a pisar, se vuelve obsoleto.
         http.authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/clients","/api/login").permitAll()
                 .antMatchers("/web/index.html","/web/img/**","/web/js/index.js","/web/css/style.css","/web/accounts.html","/web/js/accounts.js","/favicon.ico").permitAll()
                 .antMatchers("/rest/**","/h2-console/**").hasAuthority("ADMIN")
-                .antMatchers("/api/clients/current","/api/accounts/{id}","/api/clients","/web/cards.html","/web/js/cards.js","/web/css/cards.css","/web/cards.html","/web/create-cards.html","/web/js/create-cards.js","/web/transfers.html","/web/js/transfers.js","/api/clients/current/accounts").hasAnyAuthority("CLIENT","ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/logout","/api/transactions","/api/clients/current/accounts","/api/clients/current/cards/**").hasAnyAuthority("ADMIN", "CLIENT");
-                //.anyRequest().denyAll();
+                .antMatchers(HttpMethod.GET, "/api/clients/current","/api/accounts/{id}","/api/clients","/web/cards.html","/web/js/cards.js","/web/css/cards.css","/web/cards.html","/web/create-cards.html","/web/js/create-cards.js","/web/transfers.html","/web/js/transfers.js","/api/clients/current/accounts","/api/loans","/web/loan-application.html","/web/js/loan-application.js","/web/account.html{id}","/web/js/account.js").hasAnyAuthority("CLIENT","ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/logout","/api/transactions","/api/clients/current/accounts","/api/clients/current/cards/**","/api/loans").hasAnyAuthority("ADMIN", "CLIENT")
+                .anyRequest().denyAll();
 
         http.formLogin().usernameParameter("email").passwordParameter("password").loginPage("/api/login");
 
