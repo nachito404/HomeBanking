@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,9 +51,9 @@ public class LoanController {
             return new ResponseEntity<>("this loan doesn't exist", HttpStatus.FORBIDDEN);
         } else if (loanApplicationDTO.getAmount()>loan.getMaxAmount()) {
             return new ResponseEntity<>("the amount requested exceeds the maximum amount of the loan", HttpStatus.NOT_ACCEPTABLE);
-        } else if (loan.getPayments().stream().equals(loanApplicationDTO.getPayments())) {
+        } else if (loan.getPayments().stream().anyMatch(payments -> payments.equals(loanApplicationDTO.getPayments()))) {
             return new ResponseEntity<>("the number of quotas requested are not within the quotas available",HttpStatus.NOT_ACCEPTABLE);
-        } else if (client.getAccounts().stream().filter(Account -> Account.getNumber().equals(account))== null) {
+        } else if (client.getAccounts().stream().filter(Account -> Boolean.parseBoolean(Account.getNumber())).toString().equals(account.getNumber())) {
             return new ResponseEntity<>("this is not your account number", HttpStatus.FORBIDDEN);
         }else {
             ClientLoan clientLoan = new ClientLoan(loanApplicationDTO.getAmount()*0.2,loanApplicationDTO.getPayments());
