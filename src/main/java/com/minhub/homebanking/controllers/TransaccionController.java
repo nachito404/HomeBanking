@@ -30,44 +30,51 @@ public class TransaccionController {
     private TransactionRepository transactionRepository;
     @Autowired
     private AccountRepository accountRepository;
-
+//"!authentication.getAuthetiqueited" para validar si esta autenticado;
 @Transactional
 @PostMapping("/transactions")
     public ResponseEntity<Object> transactions(
         @RequestParam String fromAccountNumber,@RequestParam String toAccountNumber,
         @RequestParam Double amount , @RequestParam String description,
-        Authentication authentication){
+        Authentication authentication) {
+
     Client client = clientRepository.findByEmail(authentication.getName());
-    Account account = accountRepository.findByNumber(fromAccountNumber);
-    Account account1 = accountRepository.findByNumber(toAccountNumber);
-    if (amount == 0 || description.isBlank() || fromAccountNumber.isBlank() || toAccountNumber.isBlank()){
-        return new ResponseEntity<>("Missing data", HttpStatus.FORBIDDEN);
+    Account fromAccount = accountRepository.findByNumber(fromAccountNumber);
+    Account toAccount = accountRepository.findByNumber(toAccountNumber);
 
-    } else if (fromAccountNumber.equals(toAccountNumber)) {
-        return new ResponseEntity<>("the destination account cannot be the same as the current one", HttpStatus.FORBIDDEN);
+        if (amount == 0) {
+            return new ResponseEntity<>("the amount cannot be 0", HttpStatus.NOT_ACCEPTABLE);
+        } else if (description.isBlank()) {
+            return new ResponseEntity<>("you must introduce a description", HttpStatus.NOT_ACCEPTABLE);
+        } else if (fromAccountNumber.isBlank()) {
+            return new ResponseEntity<>("you must enter your account number", HttpStatus.NOT_ACCEPTABLE);
+        } else if (toAccountNumber.isBlank()) {
+            return new ResponseEntity<>("you must enter an account number", HttpStatus.NOT_ACCEPTABLE);
+        } else if (fromAccountNumber.equals(toAccountNumber)) {
+            return new ResponseEntity<>("the destination account cannot be the same as the current one", HttpStatus.FORBIDDEN);
 
-    } else if (client.getAccounts().stream().filter(number -> number.getNumber().equals(account)) == null) {
-        return new ResponseEntity<>("this is not your account number", HttpStatus.FORBIDDEN);
+        } else if (client.getAccounts().stream().filter(number -> number.getNumber().equals(fromAccount)) == null) {
+            return new ResponseEntity<>("this is not your account number", HttpStatus.FORBIDDEN);
 
-    } else if (account1 == null) {
-        return new ResponseEntity<>("destination account doesn't exist", HttpStatus.FORBIDDEN);
+        } else if (toAccount == null) {
+            return new ResponseEntity<>("destination account doesn't exist", HttpStatus.FORBIDDEN);
 
-    } else if (account.getBalance()<amount) {
-        return new ResponseEntity<>("insufficient funds", HttpStatus.FORBIDDEN);
+        } else if (fromAccount.getBalance() < amount) {
+            return new ResponseEntity<>("insufficient funds", HttpStatus.FORBIDDEN);
 
-    } else{
-        Transaction transactionFrom = new Transaction(TransactionType.DEBITO, amount, description + " " + toAccountNumber , LocalDateTime.now());
-        Transaction transactionTo = new Transaction(TransactionType.CREDITO, amount, description + " " + fromAccountNumber , LocalDateTime.now());
-        account.addTransaction(transactionFrom);
-        account1.addTransaction(transactionTo);
-        transactionRepository.save(transactionFrom);
-        transactionRepository.save(transactionTo);
-        account.setBalance(account.getBalance()-amount);
-        account1.setBalance(account1.getBalance()+amount);
-        accountRepository.save(account);
-        accountRepository.save(account1);
-        return new ResponseEntity<>("created", HttpStatus.CREATED);
-}
-}
+        } else {
+            Transaction transactionFrom = new Transaction(TransactionType.DEBITO, -amount, description + " " + toAccountNumber, LocalDateTime.now());
+            Transaction transactionTo = new Transaction(TransactionType.CREDITO, amount, description + " " + fromAccountNumber, LocalDateTime.now());
+            fromAccount.addTransaction(transactionFrom);
+            toAccount.addTransaction(transactionTo);
+            transactionRepository.save(transactionFrom);
+            transactionRepository.save(transactionTo);
+            fromAccount.setBalance(fromAccount.getBalance() - amount);
+            toAccount.setBalance(toAccount.getBalance() + amount);
+            accountRepository.save(fromAccount);
+            accountRepository.save(toAccount);
+            return new ResponseEntity<>("created", HttpStatus.CREATED);
+        }
+    }
 }
 

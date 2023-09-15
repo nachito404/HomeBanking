@@ -31,7 +31,7 @@ public class LoanController {
     @Autowired
     AccountRepository accountRepository;
 
-    @RequestMapping("/loans")
+    @GetMapping("/loans")
     public List<LoanDTO> getLoans(){
         List<Loan> listLoan = loanRepository.findAll();
         List<LoanDTO> listLoanDTO = listLoan.stream().map(loan -> new LoanDTO(loan)).collect(Collectors.toList());
@@ -42,11 +42,19 @@ public class LoanController {
     @Transactional
     @PostMapping("/loans")
     public ResponseEntity<Object> getLoan(@RequestBody LoanApplicationDTO loanApplicationDTO, Authentication authentication){
+
         Client client = clientRepository.findByEmail(authentication.getName());
         Loan loan = loanRepository.findById(loanApplicationDTO.getLoanId()).orElse(null);
         Account account = accountRepository.findByNumber(loanApplicationDTO.getToAccountNumber());
-        if (loanApplicationDTO.getAmount()<=0|| loanApplicationDTO.getPayments()<=0||loanApplicationDTO.getLoanId()<=0||loanApplicationDTO.getToAccountNumber()=="VIN"){
-            return new ResponseEntity<>("missing data", HttpStatus.FORBIDDEN);
+
+        if (loanApplicationDTO.getAmount()<=0){
+            return new ResponseEntity<>("the amount cannot be 0", HttpStatus.NO_CONTENT);
+        } else if (loanApplicationDTO.getPayments()<=0) {
+            return new ResponseEntity<>("the payments cannot be 0", HttpStatus.NO_CONTENT);
+        } else if (loanApplicationDTO.getLoanId()<=0) {
+            return new ResponseEntity<>("you must select a loan", HttpStatus.NO_CONTENT);
+        } else if (loanApplicationDTO.getToAccountNumber().equals("VIN")) {
+            return new ResponseEntity<>("you must enter your account number", HttpStatus.NO_CONTENT);
         } else if (loan == null) {
             return new ResponseEntity<>("this loan doesn't exist", HttpStatus.FORBIDDEN);
         } else if (loanApplicationDTO.getAmount()>loan.getMaxAmount()) {
